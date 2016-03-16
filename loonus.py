@@ -36,18 +36,19 @@ def teardown_request(exception):
 @app.route('/')
 def show_entries():
     cur = g.db.execute('select original, shorturl from entries order by id desc')
-    entries = [dict(original=row[0], shorturl=row[1]) for row in cur.fetchall()]
+    entries = [dict(original=row[0], shorturl='loon.us/'+row[1]) for row in cur.fetchall()]
     return render_template('show_entries.html', entries=entries)
 
 def shorturlcalc(originalurl):
-	return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+	letterarray = string.ascii_uppercase + string.ascii_lowercase + string.digits
+	return ''.join(random.SystemRandom().choice(letterarray) for _ in range(6))
 
 @app.route('/add', methods=['POST'])
 def add_entry():
     su = shorturlcalc(request.form['original'])
     g.db.execute('insert into entries (original, shorturl) values (?, ?)',[request.form['original'], su])
     g.db.commit()
-    flash('New entry was successfully posted')
+    flash('New tinyurl created')
     return redirect(url_for('show_entries'))
 
 @app.route('/login', methods=['GET', 'POST'])
